@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { ArrowRight, PhoneCall } from "lucide-react";
 import Counter from "./Counter";
 import { stats, siteSettings } from "@/lib/data";
@@ -18,15 +18,23 @@ const lineVariants = {
   }),
 };
 
+// Re-wrapping a scroll-linked useTransform output through a function-based
+// useTransform forces plain JS evaluation instead of this Framer Motion
+// version's hardware-accelerated (ViewTimeline) path, which gets stuck at a
+// stale value after client-side navigation back to the home page.
+function useSafe<T>(value: MotionValue<T>): MotionValue<T> {
+  return useTransform(value, (v) => v);
+}
+
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const imageY = useSafe(useTransform(scrollYProgress, [0, 1], ["0%", "18%"]));
+  const contentY = useSafe(useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]));
+  const contentOpacity = useSafe(useTransform(scrollYProgress, [0, 0.7], [1, 0]));
 
   return (
     <section
