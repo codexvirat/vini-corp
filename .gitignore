@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.local.example
+
+# lead data (contains customer PII, never commit)
+/data/*.json
 
 # vercel
 .vercel
